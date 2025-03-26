@@ -58,19 +58,19 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    // **1️⃣ Room Database**
+    // **1 Room Database**
     implementation("androidx.room:room-runtime:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
 
-    // **2️⃣ Navigation for Jetpack Compose**
+    // **2 Navigation for Jetpack Compose**
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
-    // **3️⃣ Lifecycle & ViewModel**
+    // **3Lifecycle & ViewModel**
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
 
-    // **4️⃣ Coroutine Dependencies (For async DB operations)**
+    // **4 Coroutine Dependencies (For async DB operations)**
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     // **Testing (Keep them as is)**
