@@ -33,6 +33,10 @@ fun PinnedNotesScreen(navController: NavController, viewModel: NoteViewModel) {
     window?.statusBarColor = solidColor
     window?.navigationBarColor = solidColor
 
+    var isSelectionMode by remember { mutableStateOf(false) }
+    val notes by viewModel.notes.collectAsState()
+    val selectedNotes = remember { mutableStateListOf<Int>() }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -74,17 +78,28 @@ fun PinnedNotesScreen(navController: NavController, viewModel: NoteViewModel) {
                     .padding(paddingValues),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(pinnedNotes) { note ->
+                items(pinnedNotes) { note ->  // ✅ Use note directly from pinnedNotes
+                    val isSelected = selectedNotes.contains(note.id)
+
                     NoteItem(
                         note = note,
-                        onNoteClick = {  },
-                        onLongClick = { },
-                        isSelected = false,
-                        onPinClick = { viewModel.togglePin(note) }
+                        onNoteClick = {
+                            if (isSelectionMode) {
+                                if (isSelected) selectedNotes.remove(note.id) else selectedNotes.add(note.id)
+                            } else {
+                                navController.navigate("add_edit_note/${note.id}") // ✅ Correct navigation
+                            }
+                        },
+                        onLongClick = {
+                            if (!selectedNotes.contains(note.id)) selectedNotes.add(note.id)
+                        },
+                        isSelected = isSelected,
+                        onPinClick = { viewModel.togglePin(note) },
+                        modifier = Modifier.padding(4.dp)
                     )
-
                 }
             }
+
         }
     }
 }

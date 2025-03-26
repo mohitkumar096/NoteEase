@@ -20,10 +20,11 @@ import androidx.compose.ui.unit.sp
 import com.mohit.noteease.R
 import androidx.navigation.NavController
 import com.mohit.noteease.data.local.strings.Strings.Companion.appName
+import com.mohit.noteease.viewmodel.NoteViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DrawerScreen(navController: NavController, closeDrawer: () -> Unit) {
+fun DrawerScreen(viewModel: NoteViewModel,navController: NavController, closeDrawer: () -> Unit) {
     ModalDrawerSheet(
         modifier = Modifier
             .width(300.dp)
@@ -86,6 +87,7 @@ fun DrawerScreen(navController: NavController, closeDrawer: () -> Unit) {
                     text = "Create New",
                     selected = false
                 ) {
+                    viewModel.clearSelectedNote()
                     navController.navigate("add_edit_note/0")
                     closeDrawer()
                 }

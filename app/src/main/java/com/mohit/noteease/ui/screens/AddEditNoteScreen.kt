@@ -4,7 +4,6 @@ import android.app.Activity
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.*
@@ -18,8 +17,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -27,13 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.mohit.noteease.viewmodel.NoteViewModel
 import com.mohit.noteease.data.local.Note
-import com.mohit.noteease.data.local.NoteDao
-import com.mohit.noteease.data.repository.NoteRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,16 +36,15 @@ fun AddEditNoteScreen(
     viewModel: NoteViewModel,
     noteId: Int?
 ) {
-    val isDarkMode = isSystemInDarkTheme()
-
     val note by viewModel.selectedNote.collectAsState()
 
     var title by remember { mutableStateOf("") }
     var content by remember { mutableStateOf("") }
-    var selectedColor by remember { mutableStateOf(0xFFFFF59D.toInt()) }
+    var selectedColor by remember { mutableStateOf(0xFFE6E6FA.toInt()) } // Default: Lavender
     var showDeleteDialog by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
+    val isDarkMode = isSystemInDarkTheme()
     val window = (context as? Activity)?.window
 
     val animatedColor by animateColorAsState(
@@ -59,29 +52,33 @@ fun AddEditNoteScreen(
         label = "BackgroundColor"
     )
 
-    fun darkenColor(color: Color, factor: Float = 0.8f): Color {
-        return color.copy(alpha = 1f - (1f - factor)).compositeOver(Color.Black)
+    // Function to determine app bar and system color based on background color
+    fun getSystemColor(backgroundColor: Int): Color {
+        return when (backgroundColor) {
+            0xFFE6E6FA.toInt() -> Color(0xFF7979e4)        // Lavender -> White
+            0xFFADD8E6.toInt() -> Color(0xFF3897b7)        // Light Blue -> Blue
+            0xFF90EE90.toInt() -> Color(0xFF18a558)  // Light Green -> Dark Green
+            0xFFFFF9C4.toInt() -> Color(0xFFd6ad60)  // Light Yellow -> Dark Yellow
+            0xFFFFB6C1.toInt() -> Color(0xFFe10022)         // Light Pink -> Red
+            else -> Color.White                      // Default to White
+        }
     }
 
-    val darkerColor = darkenColor(animatedColor)
-
+    val systemColor = getSystemColor(selectedColor)
+    val gradient = Brush.verticalGradient(
+        colors = listOf(animatedColor, systemColor.copy(alpha = 0.7f))
+    )
 
     LaunchedEffect(noteId) {
         if (noteId == null || noteId == 0) {
             viewModel.clearSelectedNote()
             title = ""
             content = ""
-            selectedColor = 0xFFE6E6FA.toInt() // default color
+            selectedColor = 0xFFE6E6FA.toInt() // Default: Lavender
         } else {
             viewModel.loadNote(noteId)
         }
     }
-
-
-
-
-
-
 
     LaunchedEffect(note) {
         note?.let {
@@ -90,7 +87,6 @@ fun AddEditNoteScreen(
             selectedColor = it.color
         }
     }
-
 
     fun saveNote() {
         if (title.isNotEmpty() || content.isNotEmpty()) {
@@ -105,26 +101,19 @@ fun AddEditNoteScreen(
         }
     }
 
-
-    DisposableEffect(darkerColor) {
-        val window = (context as? Activity)?.window
-
-        // Save Original Colors
-        val originalStatusBarColor = window?.statusBarColor
-        val originalNavBarColor = window?.navigationBarColor
-
-        val solidColor = if (isDarkMode) Color.Black.toArgb() else Color.White.toArgb()
-        window?.statusBarColor = darkerColor.toArgb()
-        window?.navigationBarColor = solidColor
+    DisposableEffect(animatedColor) {
+        window?.statusBarColor = systemColor.toArgb()
+        window?.navigationBarColor = systemColor.toArgb()
         WindowCompat.setDecorFitsSystemWindows(window!!, true)
 
-        // Cleanup when leaving screen
+        val solidColor = if (isDarkMode) Color.Black.toArgb() else Color.White.toArgb()
+        WindowCompat.setDecorFitsSystemWindows(window!!, true)
+
         onDispose {
             window?.statusBarColor = solidColor
             window?.navigationBarColor = solidColor
         }
     }
-
 
     BackHandler {
         saveNote()
@@ -135,21 +124,30 @@ fun AddEditNoteScreen(
         modifier = Modifier.fillMaxSize(),
         topBar = {
             TopAppBar(
-                title = {},
+                title = {Text("Note Details", modifier = Modifier.padding(horizontal = 8.dp))},
                 navigationIcon = {
                     IconButton(onClick = {
                         saveNote()
                         navController.popBackStack()
                     }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.Black)
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
+
                 },
+
                 actions = {
+                    val iconclr: Color
+                    if (systemColor == Color(0xFFe10022)){
+                        iconclr = Color.White
+                    }
+                    else{
+                        iconclr = Color(0xFFe10022)
+                    }
                     IconButton(onClick = { showDeleteDialog = true }) {
-                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = Color.Red)
+                        Icon(Icons.Default.Delete, contentDescription = "Delete", tint = iconclr)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = darkerColor),
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = systemColor),
                 modifier = Modifier.statusBarsPadding()
             )
         }
@@ -159,7 +157,7 @@ fun AddEditNoteScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
                 .background(animatedColor)
-                .padding(horizontal = 16.dp, vertical = 8.dp)
+                .padding(horizontal = 14.dp, vertical = 2.dp)
         ) {
             Column(
                 modifier = Modifier.weight(1f)
@@ -199,10 +197,17 @@ fun AddEditNoteScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
-            Box(modifier = Modifier.background(darkerColor).padding(6.dp).align(alignment = Alignment.CenterHorizontally)){
-                Column {
-                    Text("Pick a Color", fontSize = 14.sp, color = Color.Black)
-                    Spacer(modifier = Modifier.height(8.dp))
+
+            Box(
+                modifier = Modifier
+                    .background(gradient)
+                    .padding(4.dp, bottom = 0.dp)
+                    .align(alignment = Alignment.CenterHorizontally)
+            ) {
+                Column(modifier = Modifier.padding(bottom = 8.dp)) {
+                    Text("Pick a Color", fontSize = 14.sp, color = systemColor,
+                        modifier = Modifier.background(animatedColor).padding(horizontal = 4.dp))
+                    Spacer(modifier = Modifier.height(7.dp))
 
                     Row(
                         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -212,11 +217,8 @@ fun AddEditNoteScreen(
                             Box(
                                 modifier = Modifier
                                     .size(50.dp)
-                                    .clip(RoundedCornerShape(12.dp))
+                                    .clip(RoundedCornerShape(15.dp))
                                     .background(Color(color))
-                                    .border(1.dp, if (selectedColor == color.toInt()) Color.Black else Color.Transparent,
-                                        RoundedCornerShape(12.dp),
-                                    )
                                     .clickable { selectedColor = color.toInt() }
                             )
                         }
@@ -226,12 +228,11 @@ fun AddEditNoteScreen(
         }
     }
 
-
     if (showDeleteDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteDialog = false },
-            title = { Text("Delete Note") },
-            text = { Text("Are you sure you want to delete this note?") },
+            title = { Text("Delete Note", color = Color.Black) },
+            text = { Text("Are you sure you want to delete this note?", color = Color.Black) },
             confirmButton = {
                 TextButton(onClick = {
                     note?.let { viewModel.deleteNote(it) }
@@ -243,10 +244,11 @@ fun AddEditNoteScreen(
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteDialog = false }) {
-                    Text("Cancel")
+                    Text("Cancel", color = Color.Blue)
                 }
-            }
+            },
+            containerColor = animatedColor // Dark background color
         )
+
     }
 }
-

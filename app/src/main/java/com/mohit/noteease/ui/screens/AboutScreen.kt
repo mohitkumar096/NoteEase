@@ -228,7 +228,7 @@ fun AboutScreen(navController: NavController) {
                                 imageVector = Icons.Default.Email,
                                 contentDescription = "Email Developer",
                                 modifier = Modifier.size(28.dp),
-                                tint = MaterialTheme.colorScheme.primary
+                                tint = Color(0xFFFF4433)
                             )
                         }
 
@@ -257,7 +257,7 @@ fun AboutScreen(navController: NavController) {
                                 painter = painterResource(R.drawable.ic_linkedin),
                                 contentDescription = "LinkedIn Profile",
                                 modifier = Modifier.size(28.dp),
-                                tint = MaterialTheme.colorScheme.primary
+                                tint = Color(0xFF1122FF)
                             )
                         }
 

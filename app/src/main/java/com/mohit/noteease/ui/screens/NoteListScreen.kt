@@ -68,7 +68,7 @@ fun NoteListScreen(navController: NavController, viewModel: NoteViewModel) {
 
     ModalNavigationDrawer(
         drawerContent = {
-            DrawerScreen(navController) { coroutineScope.launch { drawerState.close() } }
+            DrawerScreen(viewModel,navController) { coroutineScope.launch { drawerState.close() } }
         },
         drawerState = drawerState
     ) {
