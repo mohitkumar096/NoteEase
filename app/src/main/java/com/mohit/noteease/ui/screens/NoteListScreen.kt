@@ -112,33 +112,46 @@ fun NoteListScreen(navController: NavController, viewModel: NoteViewModel) {
                 }
             }
         ) { paddingValues ->
-            LazyVerticalStaggeredGrid(
-                columns = StaggeredGridCells.Fixed(2),
-                modifier = Modifier.padding(paddingValues),
-                contentPadding = PaddingValues(8.dp)
-            ) {
-                items(notes.size) { index ->
-                    val note = notes[index]
-                    val isSelected = selectedNotes.contains(note.id)
-
-                    NoteItem(
-                        note = note,
-                        onNoteClick = {
-                            if (isSelectionMode) {
-                                if (isSelected) selectedNotes.remove(note.id) else selectedNotes.add(note.id)
-                            } else {
-                                navController.navigate("add_edit_note/${note.id}")
-                            }
-                        },
-                        onLongClick = {
-                            if (!selectedNotes.contains(note.id)) selectedNotes.add(note.id)
-                        },
-                        isSelected = isSelected,
-                        onPinClick = { viewModel.togglePin(note) },
-                        modifier = Modifier.padding(4.dp)
-                    )
+            if (notes.isEmpty()){
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentAlignment = androidx.compose.ui.Alignment.Center
+                ) {
+                    Text(text = "No Notes Found \nAdd new Note by +", style = MaterialTheme.typography.bodyLarge)
                 }
             }
+            else{
+                LazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Fixed(2),
+                    modifier = Modifier.padding(paddingValues),
+                    contentPadding = PaddingValues(8.dp)
+                ) {
+                    items(notes.size) { index ->
+                        val note = notes[index]
+                        val isSelected = selectedNotes.contains(note.id)
+
+                        NoteItem(
+                            note = note,
+                            onNoteClick = {
+                                if (isSelectionMode) {
+                                    if (isSelected) selectedNotes.remove(note.id) else selectedNotes.add(note.id)
+                                } else {
+                                    navController.navigate("add_edit_note/${note.id}")
+                                }
+                            },
+                            onLongClick = {
+                                if (!selectedNotes.contains(note.id)) selectedNotes.add(note.id)
+                            },
+                            isSelected = isSelected,
+                            onPinClick = { viewModel.togglePin(note) },
+                            modifier = Modifier.padding(4.dp)
+                        )
+                    }
+                }
+            }
+
         }
     }
 }
