@@ -78,7 +78,7 @@ fun PinnedNotesScreen(navController: NavController, viewModel: NoteViewModel) {
                     .padding(paddingValues),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                items(pinnedNotes) { note ->  // ✅ Use note directly from pinnedNotes
+                items(pinnedNotes) { note ->  
                     val isSelected = selectedNotes.contains(note.id)
 
                     NoteItem(
@@ -87,7 +87,7 @@ fun PinnedNotesScreen(navController: NavController, viewModel: NoteViewModel) {
                             if (isSelectionMode) {
                                 if (isSelected) selectedNotes.remove(note.id) else selectedNotes.add(note.id)
                             } else {
-                                navController.navigate("add_edit_note/${note.id}") // ✅ Correct navigation
+                                navController.navigate("add_edit_note/${note.id}")
                             }
                         },
                         onLongClick = {
